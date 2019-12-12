@@ -63,7 +63,7 @@ public class MainActivity extends Activity {
     public static int THIS_DEVICE_CPU_MHZ = 2000;
     public static int THIS_DEVICE_BATTERY_MAH = 2600;
     public static double THIS_DEVICE_BATTERY_MIN_START_BATTERY_LEVEL = 1d;
-    //public static final String NOMBRE_ARCHIVO = "configServer.txt";
+    public static final String NOMBRE_ARCHIVO = "configServer.txt";
     //public static final String PATH_ARCHIVO = "/sdcard/Download/";
 
     //callbacks for errors
@@ -240,13 +240,15 @@ public class MainActivity extends Activity {
         setServerButton = findViewById(R.id.setServerButton);
         startBenchmarksButton = findViewById(R.id.startBenchmarksButton);
         aSwitch = findViewById(R.id.aSwitch);
-
+        modelEditText.setText(getDeviceName());
+        modelTextView.setText(getDeviceName());
         //set onChangeListener to display the complete formater url to the user
         bindInputToDisplayText(ipEditText, ipTextView);
         bindInputToDisplayText(portEditText, portTextView);
         bindInputToDisplayText(modelEditText, modelTextView);
 
-
+        //Load configuration server
+        loadCofiguration();
 
         //bind button actions
         setServerButton.setOnClickListener(new View.OnClickListener() {
@@ -270,6 +272,7 @@ public class MainActivity extends Activity {
                     ipEditText.setEnabled(false);
                     portEditText.setEnabled(false);
                     manuaBatteryUpdateButton.setEnabled(true);
+                    saveConfiguration();
                 }
             }
         });
@@ -432,6 +435,102 @@ public class MainActivity extends Activity {
         }
     }
 
+
+    private String getDeviceName() {
+        String manufacturer = Build.MANUFACTURER;
+        String model = Build.MODEL;
+        if (model.toLowerCase().startsWith(manufacturer.toLowerCase())) {
+            return capitalize(model);
+        } else {
+            return capitalize(manufacturer) + " " + model;
+        }
+    }
+
+
+    private String capitalize(String s) {
+        if (s == null || s.length() == 0) {
+            return "";
+        }
+        char first = s.charAt(0);
+        if (Character.isUpperCase(first)) {
+            return s;
+        } else {
+            return Character.toUpperCase(first) + s.substring(1);
+        }
+    }
+
+
+
+    private void saveConfiguration(){
+        //System.out.println("VALROES SAVE  ");
+        //System.out.println(portEditText.getText().toString());
+        //System.out.println(ipEditText.getText().toString());
+        //System.out.println(modelEditText.getText().toString());
+        String ip =  ipEditText.getText().toString();
+        //String model = modelEditText.getText().toString(); //en vez de cargar lo que ingreso el usuario, obtenerlo automaticamente.
+        String model = getDeviceName();
+        String port = portEditText.getText().toString();
+        try {
+            File sd = Environment.getExternalStorageDirectory();
+            File file = new File(sd.getPath(),NOMBRE_ARCHIVO);
+            OutputStreamWriter create = new OutputStreamWriter((openFileOutput(NOMBRE_ARCHIVO,Activity.MODE_PRIVATE)));
+            String content = ip + "\n" + model + "\n" + port + "\n";
+            // create.write(ip);
+            // create.write(model);
+            // create.write(port);
+            create.write(content);
+            create.close();
+            // System.out.println(sd.getAbsolutePath());
+            Toast.makeText(this,"GUARDADO CORRECTAMETE: " + sd.getPath(),Toast.LENGTH_SHORT).show();
+        } catch (IOException e) {
+            e.printStackTrace();
+            Toast.makeText(this,"NO FUE POSIBLE GUARDAR EL ARCHIVO",Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void loadCofiguration(){
+        try {
+            File sd = Environment.getExternalStorageDirectory();
+            File file = new File(sd.getPath(),NOMBRE_ARCHIVO);
+            InputStreamReader input = new InputStreamReader(openFileInput(NOMBRE_ARCHIVO));
+            BufferedReader buffer = new BufferedReader(input);
+            ipEditText.setText(buffer.readLine());
+            modelEditText.setText(buffer.readLine());
+            portEditText.setText(buffer.readLine());
+            buffer.close();
+            input.close();
+            Toast.makeText(this,"CARGADO CORRECTAMETE",Toast.LENGTH_SHORT).show();
+        } catch (IOException e) {
+            Toast.makeText(this,"NO FUE POSIBLE CARGAR LOS DATOS",Toast.LENGTH_SHORT).show();
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle save) {
+        super.onSaveInstanceState(save);
+        //System.out.println("VALROES SAVE  ");
+        //System.out.println(portEditText.getText().toString());
+        //System.out.println(ipEditText.getText().toString());
+        //System.out.println(modelEditText.getText().toString());
+        save.putString("IP",ipEditText.getText().toString());
+        save.putString("MODEL",modelEditText.getText().toString());
+        save.putString("PORT",portEditText.getText().toString());
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle load) {
+        super.onRestoreInstanceState(load);
+        //ipEditText = findViewById(R.id.IpText);
+        //portEditText = findViewById(R.id.portText);
+        //modelEditText = findViewById(R.id.modelText);
+        //System.out.println(load.getString("IP",""));
+        //System.out.println(load.getString("PORT",""));
+        //System.out.println(load.getString("MODEL", ""));
+        ipEditText.setText(load.getString("IP",""));
+        portEditText.setText(load.getString("PORT",""));
+        modelEditText.setText(load.getString("MODEL", ""));
+    }
 
 
 }
