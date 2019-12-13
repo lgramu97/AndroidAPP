@@ -44,6 +44,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.Reader;
 
 import static android.Manifest.permission.INTERNET;
 import static com.example.myapplication.service.BenchmarkIntentService.END_BENCHMARK_ACTION;
@@ -64,12 +65,14 @@ public class MainActivity extends Activity {
     public static int THIS_DEVICE_BATTERY_MAH = 2600;
     public static double THIS_DEVICE_BATTERY_MIN_START_BATTERY_LEVEL = 1d;
     public static final String NOMBRE_ARCHIVO = "configServer.txt";
+    public final static String LOG_TAG="CPUBaterryProfiler";
     //public static final String PATH_ARCHIVO = "/sdcard/Download/";
 
     //callbacks for errors
     final Cb<String> onError = new Cb<String>() {
         @Override
         public void run(String error) {
+            System.out.println("ERROOOOOOOOOOR "  + error);
             ToastIntentService.createToasts(error);
         }
     };
@@ -162,7 +165,6 @@ public class MainActivity extends Activity {
     private Button requestBenchmarksButton;
     private Button startBenchmarksButton;
     private Switch aSwitch;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -423,6 +425,7 @@ public class MainActivity extends Activity {
                 ToastIntentService.createToasts("Sampling finished");
                 String result = intent.getStringExtra("payload");
                 String variant = intent.getStringExtra("variant");
+                //guardar sleep.
                 serverConnection.sendResult(resultSendCb, onError, getApplicationContext(), result.getBytes(), "sampling", variant);
                 running = false;
                 if (benchmarkExecutor.hasMoreToExecute()) {
@@ -494,9 +497,22 @@ public class MainActivity extends Activity {
             File file = new File(sd.getPath(),NOMBRE_ARCHIVO);
             InputStreamReader input = new InputStreamReader(openFileInput(NOMBRE_ARCHIVO));
             BufferedReader buffer = new BufferedReader(input);
-            ipEditText.setText(buffer.readLine());
-            modelEditText.setText(buffer.readLine());
-            portEditText.setText(buffer.readLine());
+            String line = null;
+            if ( (line = buffer.readLine()) != null) {
+                ipEditText.setText(line);
+                modelEditText.setText(buffer.readLine());
+                portEditText.setText(buffer.readLine());
+                String serverUrl = String.format("http://%s:%s/dewsim/%s", ipTextView.getText(), portTextView.getText(), modelEditText.getText());
+                serverConnection.registerServerUrl(serverUrl);
+                setServerButton.setText("Edit Server Url");
+                modelEditText.setEnabled(false);
+                ipEditText.setEnabled(false);
+                portEditText.setEnabled(false);
+                manuaBatteryUpdateButton.setEnabled(true);
+                requestBenchmarksButton.setEnabled(false);
+                startBenchmarksButton.setEnabled(false);
+                aSwitch.setEnabled(false);
+            }
             buffer.close();
             input.close();
             Toast.makeText(this,"CARGADO CORRECTAMETE",Toast.LENGTH_SHORT).show();
@@ -504,6 +520,7 @@ public class MainActivity extends Activity {
             Toast.makeText(this,"NO FUE POSIBLE CARGAR LOS DATOS",Toast.LENGTH_SHORT).show();
             e.printStackTrace();
         }
+        //ejecutar();
     }
 
     @Override
@@ -532,5 +549,18 @@ public class MainActivity extends Activity {
         modelEditText.setText(load.getString("MODEL", ""));
     }
 
-
+    private void ejecutar(){
+        BenchmarkExecutor benchmarkExecutor = new BenchmarkExecutor();
+        ReaderJson reader = new ReaderJson("ëpepe");
+        System.out.println("NUMERO 1");
+        try {
+            reader.readAndSet();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        benchmarkExecutor.setBenchmarkData(reader.getBenchmarkData());
+        System.out.println("NUMERO 2");
+        benchmarkExecutor.execute(getApplicationContext());
+        System.out.println("NUMERO 3");
+    }
 }

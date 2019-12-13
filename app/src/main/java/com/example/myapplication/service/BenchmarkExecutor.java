@@ -32,6 +32,7 @@ public class BenchmarkExecutor {
         final BenchmarkDefinition definition = benchmarkData.getBenchmarkDefinitions().get(0);
         benchClassName = "com.example.myapplication.Benchmark." + definition.getBenchmarkClass();
         variants = definition.getVariants();
+        System.out.println(variants.size() + " VALORES DEL VARIANT");
         Collections.sort(variants, new Comparator<Variant>() {
             @Override
             public int compare(Variant o1, Variant o2) {
@@ -45,6 +46,7 @@ public class BenchmarkExecutor {
     }
 
     public boolean hasMoreToExecute() {
+        System.out.println("VALUES" + variants.size());
         return currentBenchmark < variants.size();
     }
 

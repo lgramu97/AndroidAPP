@@ -16,12 +16,13 @@ import java.util.List;
 public class ReaderJson {
     private BenchmarkData benchmarkData;
     private BenchmarkDefinition benchmarkDefinition;
-    private Variant variant;
     private String path;
 
     public ReaderJson(String file){
         this.path = file;
-        variant = new Variant();
+    }
+
+    public ReaderJson() {
     }
 
 
@@ -55,37 +56,14 @@ public class ReaderJson {
                   "\t\t\t  \"paramsRunStage\" : {\"cpuLevel\": 1.0, \"screenState\": \"off\"},\n" +
                   "\t\t\t  \"energyPreconditionSamplingStage\" : {\"requiredBatteryState\" : \"charging\", \"minStartBatteryLevel\" : 0.1}, \n" +
                   "\t\t\t  \"energyPreconditionRunStage\" : {\"requiredBatteryState\" : \"discharging\", \"minStartBatteryLevel\" : 1.0, \"minEndBatteryLevel\" : 0.05}\n" +
-                  "\t\t\t}, \n" +
-                  "\n" +
-                  "\t\t\t{ \n" +
-                  "\t\t\t  \"variantId\" : \"cpu.2\", \n" +
-                  "\t\t\t  \"paramsSamplingStage\" : {\"convergenceThreshold\" : 0.01}, \n" +
-                  "\t\t\t  \"paramsRunStage\" : {\"cpuLevel\": 1.0, \"screenState\": \"on\"},\n" +
-                  "\t\t\t  \"energyPreconditionSamplingStage\" : {\"requiredBatteryState\" : \"charging\", \"minStartBatteryLevel\" : 0.1}, \n" +
-                  "\t\t\t  \"energyPreconditionRunStage\" : {\"requiredBatteryState\" : \"discharging\", \"minStartBatteryLevel\" : 1.0, \"minEndBatteryLevel\" : 0.05}\n" +
-                  "\t\t\t}, \n" +
-                  "\n" +
-                  "\t\t\t{ \n" +
-                  "\t\t\t  \"variantId\" : \"cpu.3\", \n" +
-                  "\t\t\t  \"paramsSamplingStage\" : {\"convergenceThreshold\" : 0.015}, \n" +
-                  "\t\t\t  \"paramsRunStage\" : {\"cpuLevel\": 0.75, \"screenState\": \"off\"},\n" +
-                  "\t\t\t  \"energyPreconditionSamplingStage\" : {\"requiredBatteryState\" : \"charging\", \"minStartBatteryLevel\" : 0.1}, \n" +
-                  "\t\t\t  \"energyPreconditionRunStage\" : {\"requiredBatteryState\" : \"discharging\", \"minStartBatteryLevel\" : 1.0, \"minEndBatteryLevel\" : 0.05}\n" +
-                  "\t\t\t},\n" +
-                  "\n" +
-                  "\t\t\t{ \n" +
-                  "\t\t\t  \"variantId\" : \"cpu.4\", \n" +
-                  "\t\t\t  \"paramsSamplingStage\" : {\"convergenceThreshold\" : 0.015}, \n" +
-                  "\t\t\t  \"paramsRunStage\" : {\"cpuLevel\": 0.75, \"screenState\": \"on\"},\n" +
-                  "\t\t\t  \"energyPreconditionSamplingStage\" : {\"requiredBatteryState\" : \"charging\", \"minStartBatteryLevel\" : 0.1}, \n" +
-                  "\t\t\t  \"energyPreconditionRunStage\" : {\"requiredBatteryState\" : \"discharging\", \"minStartBatteryLevel\" : 1.0, \"minEndBatteryLevel\" : 0.05}\n" +
                   "\t\t\t}\n" +
+                  "\n" +
                   "\t\t]\n" +
                   "\t} \n" +
                   "],\n" +
                   "\n" +
                   "\"runOrder\" : [\n" +
-                  "\t\t\"cpu.1\", \"cpu.2\", \"cpu.3\", \"cpu.4\" \n" +
+                  "\t\t\"cpu.1\" \n" +
                   "\t]\n" +
                   "}\n";
           JSONObject mainObject = new JSONObject(json);
@@ -102,6 +80,7 @@ public class ReaderJson {
 
               List<Variant> variants = new ArrayList<Variant>();
               for (int j = 0; j<benchmarkVar.length() ; j++) {
+                  Variant variant = new Variant();
                   JSONObject var = benchmarkVar.getJSONObject(j);
                   String variantId = var.getString("variantId");
 
@@ -154,6 +133,7 @@ public class ReaderJson {
               benchmarkDefinition.setBenchmarkClass(benchmarkClass);
               benchmarkDefinition.setBenchmarkId(benchmarkId);
               benchmarkDefinition.setVariants(variants);
+              System.out.print("VARIANTS SIZE " + benchmarkDefinition.getVariants().size());
               definitions.add(benchmarkDefinition);
           }
           List<String> runOrder = new ArrayList<String>();

@@ -156,7 +156,8 @@ public class ServerConnection {
 
         @Override
         public void onErrorResponse(VolleyError error) {
-            onErrorCb.run(error.getMessage());
+            if (error.getMessage() != null)
+                onErrorCb.run(error.getMessage());
         }
     }
 
